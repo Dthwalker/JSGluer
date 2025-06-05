@@ -7,19 +7,17 @@ const args = process.argv.slice(2);
 // ------------------------------ //
 // ----------- Config ----------- //
 
-let name = args[0];
+let [starter, bundle] = args;
 
-if (!name) throw {error: 'you need to specify the file name in the call argument'};
+if (!starter || !bundle) throw {error: 'you need to specify the file name in the call argument'};
 
-let inputScript = path.resolve(__dirname, 'src', 'dev', name + '.js');
-let outputScript = path.resolve(__dirname, 'src', 'DefaultBuilds', name + 'Bundle.js');
+let inputScript = path.resolve(__dirname, starter);
+let outputScript = path.resolve(__dirname, bundle, path.basename(inputScript, path.extname(inputScript)) + 'Bundle.js');
 
 
 
 // ------------------------------- //
 // ------------ Logic ------------ //
-const rePath = (from, to) => path.join(from.split(/\\|\//ig).slice(0, -1).join('/'),  to);
-
 
 let stack = new Set();
 let script = inputScript;
@@ -30,12 +28,11 @@ const collectImports = (file) => {
 
     for (let i = 0; i < rowScript.length; i++) {
         let imprt = rowScript[i].trim().match(/(?<=^import.*('|"|`)).+\.*js(?=('|"|`))/i);
-        console.log(rowScript[i])
         if (imprt) {
             rowScript.splice(i, 1);
             i--;
             try {
-                collectImports(rePath(file, imprt[0]));
+                collectImports(  path.join(path.dirname(file), imprt[0])  );
             } catch { return }
         }
     }
@@ -45,3 +42,5 @@ const collectImports = (file) => {
 
 collectImports(script);
 fs.writeFileSync(outputScript, [...stack].join('\n\n\n'));
+
+console.log(`\n\n\x1b[105mGluing completed successfully!\x1b[0m\nBundle file: ${outputScript}\n`);
