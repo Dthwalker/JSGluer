@@ -36,7 +36,7 @@ const collectImports = (file) => {
             } catch { return }
         }
     }
-    stack.add(rowScript.join('\n').replaceAll('export ', ''));
+    stack.add(rowScript.join('\n').replaceAll(/export (default )*/g, ''));
 }
 
 
